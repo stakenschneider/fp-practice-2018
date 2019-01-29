@@ -73,7 +73,6 @@ module Task1_2 where
                  | otherwise = isPrime' x (i + 1)
     
     type Point2D = (Double, Double)
-
     getX :: Point2D -> Double
     getX  (x, _) = x
 
@@ -99,12 +98,13 @@ module Task1_2 where
     --  1, если он остроугольный
     --  2, если он прямоугольный
     --  -1, если это не треугольник
-
     triangleKind :: Point2D -> Point2D -> Point2D -> Integer
-    edge ax bx ay by = sqrt((bx - ax)**2 + (by - ay)**2)
-    triangleKind a b c = triangleKind' (edge (getX a) (getX b) (getY a) (getY b)) (edge (getX a) (getX c) (getY a) (getY c)) (edge (getX c) (getX b) (getY c) (getY b))
-    triangleKind' a b c | (( a + b <= c) || ( a + c <= b) || ( b + c <= a )) = (-1)
-                       | ((a * a == b * b + c * c) || (b * b == a * a + c * c) || (c * c == b * b + a * a)) = 2
-                       | ((a * a > b * b + c * c) || (b * b > a * a + c * c) || (c * c > b * b + a * a)) = 0
-                       | otherwise = 1
+    triangleKind a b c = triangleKind' (edge a b) (edge a c) (edge c b)
+
+    triangleKind' a b c | ( a + b <= c) || ( a + c <= b) || ( b + c <= a ) = (-1)
+                        | (a^2 == b^2 + c^2) || (b^2 == a^2 + c^2) || (c^2 == b^2 + a^2) = 2
+                        | (a^2 > b^2 + c^2) || (b^2 > a^2 + c^2) || (c^2 > b^2 + a^2) = 0
+                        | otherwise = 1
+
+    edge a b = sqrt((getX b - getX a)**2 + (getY b - getY a)**2)
 
