@@ -41,51 +41,41 @@ module Task2_1 where
     -- Удаление элемента по ключу
     remove :: Integer -> TreeMap v -> TreeMap v
     remove i Nil = error "Key not found"
+    remove i (Node key val Nil Nil s) | key == i = Nil
+    remove i (Node key val l Nil s) | key == i = l
+    remove i (Node key val l r s)       | i < key = Node key val (remove i l) r (s - 1)
+                                        | i > key = Node key val l (remove i r) (s - 1)
+                                        | otherwise = Node key' (lookup key' r) l (remove key' r) (s - 1) where
+                                            key' = takeRight r
+    takeRight (Node key _ Nil _ _) = key
+    takeRight (Node _ _ l _ _) = takeRight l
 
-    remove i  elem@(Node key val l r s)  | i < key = Node key val (remove i l) r (s - 1)
-                                         | i > key = Node key val l (remove i r) (s - 1) 
-                                         | otherwise = remove' elem
-
-    remove' (Node key val l r s) = case (l, r) of
-        (Nil, r) -> r
-        (l, Nil) -> l
-        (l, r)   -> Node key' val' l' r (s - 1) where 
-                        (key', val') = remove'' l
-                        l' = remove key' l
-
-
-    remove'' :: TreeMap v -> (Integer, v)
-    remove'' (Node key val _ Nil _) = (key, val)
-    remove'' (Node _ _ _ r _) = remove'' r
-                                              
-    
     -- Поиск ближайшего снизу ключа относительно заданного
     nearestLE :: Integer -> TreeMap v -> (Integer, v)
-    nearestLE i Nil = error "Could not find"
-    nearestLE i (Node key val l r _ ) | key == i = (key, val)
-                                      | key > i = nearestLE i l
-                                      | key < i = searchRight r key val i
+    nearestLE i t = nearestLE' i t Nil
 
-    searchRight elem@(Node k v left _ _) key val i| k == i = (k, v)
-                                                  | k < i = nearestLE i elem
-                                                  | k > i = case (left) of
-                                                     Nil -> (key, val)
-                                                     otherwise -> nearestLE i left
+    nearestLE' i Nil e = case (e) of
+        Nil -> error "Could not find"
+        (Node key val l r _ ) -> (key,val)
 
-    searchRight (Node _ _ Nil _ _) key val _ = (key, val)
-                                                                           
+    nearestLE' i elem@(Node key val l r _ ) e | key == i = (key, val)
+                                              | key > i = nearestLE' i l e
+                                              | key < i = checkRight r  where
+                                                checkRight r' = case (r') of
+                                                    Nil -> (key, val)
+                                                    otherwise -> nearestLE' i r elem
+
+
     -- Построение дерева из списка пар
     treeFromList :: [(Integer, v)] -> TreeMap v
     treeFromList lst = foldr insert Nil lst
-    
+
     -- Построение списка пар из дерева
     listFromTree :: TreeMap v -> [(Integer, v)]
     listFromTree (Node k v l r _) = listFromTree l ++ [(k, v)] ++ listFromTree r
     listFromTree Nil = []
 
-    
-    
-    
+
     -- Поиск k-той порядковой статистики дерева 
     kMean :: Integer -> TreeMap v -> (Integer, v)
     kMean i Nil = error "End of search"

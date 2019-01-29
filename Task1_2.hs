@@ -35,9 +35,11 @@ module Task1_2 where
 
     
     -- наибольший общий делитель двух чисел
-    gcd :: Integer -> Integer -> Integer
-    gcd x y | y == 0 = abs x 
-            | y /= 0 = gcd y (rem x y)
+    gcd :: Integral a => a -> a -> a
+    gcd 0 0 = error "err"
+    gcd m n = gcd' (abs m) (abs n) where
+        gcd' m 0 = m
+        gcd' m n = gcd' n (rem m n)
     
     -- существует ли полный целочисленный квадрат в диапазоне [from, to)?
     doesSquareBetweenExist :: Integer -> Integer -> Bool
@@ -71,18 +73,38 @@ module Task1_2 where
                  | otherwise = isPrime' x (i + 1)
     
     type Point2D = (Double, Double)
-    
+
+    getX :: Point2D -> Double
+    getX  (x, _) = x
+
+    getY :: Point2D -> Double
+    getY (_, y) = y
+
     -- рассчитайте площадь многоугольника по формуле Гаусса
     -- многоугольник задан списком координат
     shapeArea :: [Point2D] -> Double
-    shapeArea points = todo
-    
+    shapeArea points = shapeArea' (map getX points) (map getY points)
+
+    shapeArea' :: [Double] -> [Double] -> Double
+    shapeArea' x y =  ((0.5*) . abs . sum) $ map det $ zip pxs pys
+         where xs = x  ++ [head x]
+               ys = y  ++ [head y]
+               pxs = zip xs (drop 1 xs)
+               pys = zip ys (drop 1 ys)
+               det ((x1,x2),(y1,y2)) = x1*y2 - y1*x2
+
     -- треугольник задан своими координатами.
-    -- функция должна вернуть 
+    -- функция должна вернуть
     --  0, если он тупоугольный
     --  1, если он остроугольный
     --  2, если он прямоугольный
     --  -1, если это не треугольник
+
     triangleKind :: Point2D -> Point2D -> Point2D -> Integer
-    triangleKind a b c = todo
-    
+    edge ax bx ay by = sqrt((bx - ax)**2 + (by - ay)**2)
+    triangleKind a b c = triangleKind' (edge (getX a) (getX b) (getY a) (getY b)) (edge (getX a) (getX c) (getY a) (getY c)) (edge (getX c) (getX b) (getY c) (getY b))
+    triangleKind' a b c | (( a + b <= c) || ( a + c <= b) || ( b + c <= a )) = (-1)
+                       | ((a * a == b * b + c * c) || (b * b == a * a + c * c) || (c * c == b * b + a * a)) = 2
+                       | ((a * a > b * b + c * c) || (b * b > a * a + c * c) || (c * c > b * b + a * a)) = 0
+                       | otherwise = 1
+
