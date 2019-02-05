@@ -29,11 +29,29 @@ list2dlist' left (h: t) =
     let rec = DCons left h (list2dlist' rec t)
     in rec
 
+dlist2list :: DList a -> [a]
+dlist2list dlst = unfoldr dlist2list' dlst
+
+dlist2list' DNil = Nothing
+dlist2list' (DCons _ v r) = Just(v, r)
+
+unfoldr :: (b -> Maybe (a, b)) -> b -> [a]
+unfoldr f b = case f b of
+    Just (a, b') -> a : unfoldr f b'
+    Nothing -> []
+
+
 index :: DList a -> Int -> a
-index = todo
+index DNil ind = error "error: list is empty"
+index (DCons left current right) 0 = current
+index (DCons left current right) ind = index right (ind - 1)
 
 insertAt :: DList a -> Int -> a -> DList a
-insertAt list index value = todo
+insertAt dlst i x = list2dlist (insertAt' dlst i x)
+insertAt' dlst i x = let (ys,zs) = splitAt i (dlist2list dlst)  
+                     in   ys ++ [x] ++ zs  
 
 removeAt :: DList a -> Int -> DList a
-removeAt list index = todo
+removeAt dlst i = list2dlist (removeAt' dlst i)
+removeAt' dlst i = let (ys,zs) = splitAt i (dlist2list dlst)    
+                   in   ys ++ (tail zs)
